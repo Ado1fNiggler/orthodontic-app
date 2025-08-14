@@ -310,8 +310,8 @@ Swagger UI διαθέσιμο στο: http://localhost:5000/api-docs
 ✅ 4. .env.example✅
 ✅ 5. README.mdPHASE 2: Backend Core (15 files)✅
 ✅ 6. backend/package.json✅
-✅ 7. backend/server.ts
-✅ 8. backend/prisma/schema.prisma
+✅ 7. backend/server.ts✅
+✅ 8. backend/prisma/schema.prisma✅
 ✅ 9. backend/src/config/database.ts
 ✅ 10. backend/src/config/supabase.ts
 ✅ 11. backend/src/config/cloudinary.ts
