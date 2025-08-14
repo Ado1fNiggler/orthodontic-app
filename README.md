@@ -334,20 +334,20 @@ Swagger UI διαθέσιμο στο: http://localhost:5000/api-docs
 ✅ 28. backend/src/routes/photo.routes.ts✅
 ✅ 29. backend/src/routes/treatment.routes.ts✅
 ✅ 30. backend/src/routes/index.tsPHASE 4: Frontend Setup (10 files)✅
-✅ 31. frontend/package.json
-✅ 32. frontend/vite.config.ts
-✅ 33. frontend/tsconfig.json
-✅ 34. frontend/tailwind.config.js
-✅ 35. frontend/index.html
-✅ 36. frontend/src/main.tsx
-✅ 37. frontend/src/App.tsx
-✅ 38. frontend/src/styles/globals.css
-✅ 39. frontend/public/manifest.json (PWA)
-✅ 40. frontend/src/service-worker.tsPHASE 5: Frontend Core Components (15 files)
-✅ 41. frontend/src/layouts/MainLayout.tsx
-✅ 42. frontend/src/layouts/AuthLayout.tsx
-✅ 43. frontend/src/components/common/Header.tsx
-✅ 44. frontend/src/components/common/Sidebar.tsx
+✅ 31. frontend/package.json✅
+✅ 32. frontend/vite.config.ts✅
+✅ 33. frontend/tsconfig.json✅
+✅ 34. frontend/tailwind.config.js✅
+✅ 35. frontend/index.html✅
+✅ 36. frontend/src/main.tsx✅
+✅ 37. frontend/src/App.tsx✅
+✅ 38. frontend/src/styles/globals.css✅
+✅ 39. frontend/public/manifest.json (PWA)✅
+✅ 40. frontend/src/service-worker.tsPHASE 5: Frontend Core Components (15 files)✅
+✅ 41. frontend/src/layouts/MainLayout.tsx✅
+✅ 42. frontend/src/layouts/AuthLayout.tsx✅
+✅ 43. frontend/src/components/common/Header.tsx✅
+✅ 44. frontend/src/components/common/Sidebar.tsx✅
 ✅ 45. frontend/src/components/common/MobileNav.tsx
 ✅ 46. frontend/src/components/common/Button.tsx
 ✅ 47. frontend/src/components/common/Input.tsx
