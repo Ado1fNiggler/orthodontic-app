@@ -348,7 +348,7 @@ Swagger UI διαθέσιμο στο: http://localhost:5000/api-docs
 ✅ 42. frontend/src/layouts/AuthLayout.tsx✅
 ✅ 43. frontend/src/components/common/Header.tsx✅
 ✅ 44. frontend/src/components/common/Sidebar.tsx✅
-✅ 45. frontend/src/components/common/MobileNav.tsx
+✅ 45. frontend/src/components/common/MobileNav.tsx✅
 ✅ 46. frontend/src/components/common/Button.tsx
 ✅ 47. frontend/src/components/common/Input.tsx
 ✅ 48. frontend/src/components/common/Modal.tsx
