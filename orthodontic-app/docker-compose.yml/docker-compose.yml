@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # PostgreSQL για local development
+  postgres:
+    image: postgres:15-alpine
+    container_name: orthodontic-db
+    restart: always
+    environment:
+      POSTGRES_DB: orthodontic_app
+      POSTGRES_USER: orthodontic_user
+      POSTGRES_PASSWORD: orthodontic_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/pgdata
+      - ./backend/prisma/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - orthodontic-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orthodontic_user -d orthodontic_app"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Adminer για database management (optional)
+  adminer:
+    image: adminer:latest
+    container_name: orthodontic-adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - orthodontic-network
+    depends_on:
+      - postgres
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+
+  # Redis για caching & sessions (optional για μελλοντική χρήση)
+  redis:
+    image: redis:7-alpine
+    container_name: orthodontic-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - orthodontic-network
+    command: redis-server --appendonly yes --requirepass orthodontic_redis_pass
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  orthodontic-network:
+    driver: bridge

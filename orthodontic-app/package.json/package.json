@@ -1,0 +1,62 @@
+{
+  "name": "orthodontic-app",
+  "version": "1.0.0",
+  "description": "Ολοκληρωμένο σύστημα διαχείρισης ορθοδοντικού ιατρείου",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "npm run build:backend && npm run build:frontend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "clean": "rm -rf node_modules backend/node_modules frontend/node_modules",
+    "clean:install": "npm run clean && npm run install:all",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "db:reset": "cd backend && npx prisma db push --force-reset && npx prisma db seed",
+    "db:migrate": "cd backend && npx prisma migrate dev",
+    "db:studio": "cd backend && npx prisma studio",
+    "lint": "cd frontend && npm run lint && cd ../backend && npm run lint",
+    "test": "cd backend && npm run test && cd ../frontend && npm run test",
+    "backup": "node scripts/backup.js",
+    "deploy:frontend": "cd frontend && npm run build && rsync -avz --delete dist/ your-hostinger-path/",
+    "deploy:backend": "cd backend && npm run build && git push render main"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "orthodontic",
+    "dental",
+    "practice-management",
+    "patient-management",
+    "healthcare",
+    "pwa",
+    "react",
+    "nodejs"
+  ],
+  "author": "Dr. Liougiourou Orthodontic Clinic",
+  "license": "UNLICENSED",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/orthodontic-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/orthodontic-app/issues"
+  },
+  "homepage": "https://app.liougiourou.gr"
+}

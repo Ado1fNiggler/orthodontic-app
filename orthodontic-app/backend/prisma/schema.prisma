@@ -1,0 +1,413 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User management
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  role      UserRole @default(DOCTOR)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  patients          Patient[]
+  treatmentPlans    TreatmentPlan[]
+  clinicalNotes     ClinicalNote[]
+  payments          Payment[]
+  createdPhotos     Photo[]
+  createdAppointments Appointment[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  DOCTOR
+  ASSISTANT
+}
+
+// Patient management
+model Patient {
+  id          String    @id @default(cuid())
+  firstName   String    @map("first_name")
+  lastName    String    @map("last_name")
+  email       String?   @unique
+  phone       String?
+  dateOfBirth DateTime? @map("date_of_birth")
+  gender      Gender?
+  address     String?
+  city        String?
+  postalCode  String?   @map("postal_code")
+  country     String?   @default("Greece")
+  
+  // Medical information
+  medicalHistory    Json?            @map("medical_history")
+  allergies         String?
+  medications       String?
+  emergencyContact  Json?            @map("emergency_contact")
+  insuranceInfo     Json?            @map("insurance_info")
+  
+  // Orthodontic specific
+  orthodonticHistory Json?           @map("orthodontic_history")
+  referralSource     String?         @map("referral_source")
+  
+  // System fields
+  isActive    Boolean  @default(true) @map("is_active")
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  creator            User              @relation(fields: [createdBy], references: [id])
+  photos             Photo[]
+  treatmentPlans     TreatmentPlan[]
+  appointments       Appointment[]
+  clinicalNotes      ClinicalNote[]
+  payments           Payment[]
+  treatmentPhases    TreatmentPhase[]
+
+  @@map("patients")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+// Photo management system
+model Photo {
+  id          String      @id @default(cuid())
+  patientId   String      @map("patient_id")
+  filename    String
+  originalName String     @map("original_name")
+  cloudinaryId String     @map("cloudinary_id")
+  cloudinaryUrl String    @map("cloudinary_url")
+  category    PhotoCategory
+  subcategory String?
+  description String?
+  tags        String[]
+  
+  // Photo metadata
+  fileSize    Int         @map("file_size")
+  mimeType    String      @map("mime_type")
+  width       Int?
+  height      Int?
+  
+  // Clinical data
+  treatmentPhaseId String? @map("treatment_phase_id")
+  appointmentId    String? @map("appointment_id")
+  isBeforeAfter    Boolean @default(false) @map("is_before_after")
+  beforeAfterPairId String? @map("before_after_pair_id")
+  
+  // System fields
+  uploadedBy  String      @map("uploaded_by")
+  uploadedAt  DateTime    @default(now()) @map("uploaded_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  patient         Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  uploader        User            @relation(fields: [uploadedBy], references: [id])
+  treatmentPhase  TreatmentPhase? @relation(fields: [treatmentPhaseId], references: [id])
+  appointment     Appointment?    @relation(fields: [appointmentId], references: [id])
+
+  @@map("photos")
+}
+
+enum PhotoCategory {
+  INTRAORAL
+  EXTRAORAL
+  RADIOGRAPH
+  MODELS
+  CLINICAL
+  PROGRESS
+  FINAL
+}
+
+// Treatment planning
+model TreatmentPlan {
+  id          String    @id @default(cuid())
+  patientId   String    @map("patient_id")
+  title       String
+  description String?
+  
+  // Orthodontic assessment
+  diagnosis           String
+  treatmentGoals      String[]          @map("treatment_goals")
+  estimatedDuration   Int?              @map("estimated_duration") // in months
+  complexity          TreatmentComplexity
+  
+  // Clinical data
+  initialAssessment   Json              @map("initial_assessment")
+  treatmentOptions    Json              @map("treatment_options")
+  selectedOption      String            @map("selected_option")
+  
+  // Appliances and materials
+  appliancesUsed      String[]          @map("appliances_used")
+  materialsList       Json?             @map("materials_list")
+  
+  // Status and timeline
+  status              TreatmentStatus   @default(PLANNING)
+  startDate           DateTime?         @map("start_date")
+  estimatedEndDate    DateTime?         @map("estimated_end_date")
+  actualEndDate       DateTime?         @map("actual_end_date")
+  
+  // Financial
+  totalCost           Decimal?          @map("total_cost") @db.Decimal(10, 2)
+  paymentPlan         Json?             @map("payment_plan")
+  
+  // System fields
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  patient         Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  creator         User              @relation(fields: [createdBy], references: [id])
+  phases          TreatmentPhase[]
+  clinicalNotes   ClinicalNote[]
+  appointments    Appointment[]
+  payments        Payment[]
+
+  @@map("treatment_plans")
+}
+
+enum TreatmentComplexity {
+  SIMPLE
+  MODERATE
+  COMPLEX
+  SEVERE
+}
+
+enum TreatmentStatus {
+  PLANNING
+  ACTIVE
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+}
+
+// Treatment phases
+model TreatmentPhase {
+  id              String    @id @default(cuid())
+  treatmentPlanId String    @map("treatment_plan_id")
+  patientId       String    @map("patient_id")
+  
+  // Phase details
+  phaseNumber     Int       @map("phase_number")
+  title           String
+  description     String?
+  objectives      String[]
+  
+  // Appliances for this phase
+  appliances      Json      // brackets, wires, elastics, etc.
+  instructions    String?   // patient instructions
+  
+  // Timeline
+  startDate       DateTime? @map("start_date")
+  estimatedEndDate DateTime? @map("estimated_end_date")
+  actualEndDate   DateTime? @map("actual_end_date")
+  
+  // Status
+  status          PhaseStatus @default(PLANNED)
+  progress        Int         @default(0) // percentage 0-100
+  
+  // System fields
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  treatmentPlan   TreatmentPlan   @relation(fields: [treatmentPlanId], references: [id], onDelete: Cascade)
+  patient         Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  photos          Photo[]
+  clinicalNotes   ClinicalNote[]
+  appointments    Appointment[]
+
+  @@map("treatment_phases")
+}
+
+enum PhaseStatus {
+  PLANNED
+  ACTIVE
+  COMPLETED
+  PAUSED
+  CANCELLED
+}
+
+// Clinical notes
+model ClinicalNote {
+  id              String    @id @default(cuid())
+  patientId       String    @map("patient_id")
+  treatmentPlanId String?   @map("treatment_plan_id")
+  treatmentPhaseId String?  @map("treatment_phase_id")
+  appointmentId   String?   @map("appointment_id")
+  
+  // Note content
+  title           String
+  content         String
+  noteType        NoteType  @map("note_type")
+  tags            String[]
+  
+  // Clinical observations
+  observations    Json?
+  recommendations String?
+  nextSteps       String?   @map("next_steps")
+  
+  // System fields
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  patient         Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  creator         User            @relation(fields: [createdBy], references: [id])
+  treatmentPlan   TreatmentPlan?  @relation(fields: [treatmentPlanId], references: [id])
+  treatmentPhase  TreatmentPhase? @relation(fields: [treatmentPhaseId], references: [id])
+  appointment     Appointment?    @relation(fields: [appointmentId], references: [id])
+
+  @@map("clinical_notes")
+}
+
+enum NoteType {
+  CONSULTATION
+  EXAMINATION
+  TREATMENT
+  FOLLOW_UP
+  EMERGENCY
+  GENERAL
+}
+
+// Appointments (sync with existing booking system)
+model Appointment {
+  id              String    @id @default(cuid())
+  patientId       String    @map("patient_id")
+  treatmentPlanId String?   @map("treatment_plan_id")
+  treatmentPhaseId String?  @map("treatment_phase_id")
+  
+  // Appointment details
+  appointmentDate DateTime  @map("appointment_date")
+  appointmentTime String    @map("appointment_time")
+  duration        Int       @default(30) // minutes
+  appointmentType AppointmentType @map("appointment_type")
+  
+  // Status and notes
+  status          AppointmentStatus @default(SCHEDULED)
+  notes           String?
+  reasonForVisit  String?   @map("reason_for_visit")
+  treatmentPerformed String? @map("treatment_performed")
+  
+  // Integration with legacy system
+  legacyBookingId String?   @unique @map("legacy_booking_id")
+  bookingNumber   String?   @unique @map("booking_number")
+  
+  // System fields
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  patient         Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  creator         User            @relation(fields: [createdBy], references: [id])
+  treatmentPlan   TreatmentPlan?  @relation(fields: [treatmentPlanId], references: [id])
+  treatmentPhase  TreatmentPhase? @relation(fields: [treatmentPhaseId], references: [id])
+  photos          Photo[]
+  clinicalNotes   ClinicalNote[]
+
+  @@map("appointments")
+}
+
+enum AppointmentType {
+  CONSULTATION
+  EXAMINATION
+  TREATMENT
+  FOLLOW_UP
+  EMERGENCY
+  REVIEW
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// Payment management
+model Payment {
+  id              String    @id @default(cuid())
+  patientId       String    @map("patient_id")
+  treatmentPlanId String?   @map("treatment_plan_id")
+  
+  // Payment details
+  amount          Decimal   @db.Decimal(10, 2)
+  currency        String    @default("EUR")
+  paymentMethod   PaymentMethod @map("payment_method")
+  
+  // Transaction info
+  transactionId   String?   @unique @map("transaction_id")
+  description     String?
+  notes           String?
+  
+  // Status and dates
+  status          PaymentStatus @default(PENDING)
+  dueDate         DateTime? @map("due_date")
+  paidDate        DateTime? @map("paid_date")
+  
+  // System fields
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  patient       Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  creator       User           @relation(fields: [createdBy], references: [id])
+  treatmentPlan TreatmentPlan? @relation(fields: [treatmentPlanId], references: [id])
+
+  @@map("payments")
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  BANK_TRANSFER
+  CHECK
+  INSURANCE
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  PARTIAL
+  OVERDUE
+  CANCELLED
+  REFUNDED
+}
+
+// System settings and configurations
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  category  String
+  isPublic  Boolean  @default(false) @map("is_public")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
