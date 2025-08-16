@@ -1,8 +1,9 @@
+import { NotFoundError, BadRequestError } from '../utils/error.handler.js';
 import { prisma } from '../config/database.js';
 import { connectMySQL } from '../config/database.js';
 import { logger, dbLogger } from '../utils/logger.js';
 import { PatientService } from './patient.service.js';
-import { BadRequestError, NotFoundError } from '../middleware/error.js';
+
 
 export interface BookingSystemData {
   id: number;

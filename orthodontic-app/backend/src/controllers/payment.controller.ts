@@ -1,7 +1,8 @@
+import { PaymentMethod, PaymentStatus } from '@prisma/client'; // <-- ΠΡΟΣΘΗΚΗ ΤΟΥ PaymentStatus
+import { NotFoundError, BadRequestError } from '../utils/error.handler.js';
 import { Request, Response } from 'express';
 import { prisma } from '../config/database.js';
-import { asyncHandler } from '../middleware/error.js';
-import { NotFoundError, BadRequestError } from '../middleware/error.js';
+import { asyncHandler } from '../middleware/error.js'; // <-- ΔΙΟΡΘΩΣΗ ΤΗΣ ΔΙΑΔΡΟΜΗΣ
 import { logger } from '../utils/logger.js';
 
 export class PaymentController {
@@ -12,31 +13,16 @@ export class PaymentController {
     const paymentData = {
       ...req.body,
       createdBy: req.user!.id,
+      paymentMethod: req.body.paymentMethod as PaymentMethod,
+      status: req.body.status as PaymentStatus, // <-- ΔΙΟΡΘΩΣΗ ΤΥΠΟΥ
     };
 
     const payment = await prisma.payment.create({
       data: paymentData,
       include: {
-        patient: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          }
-        },
-        creator: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          }
-        },
-        treatmentPlan: {
-          select: {
-            id: true,
-            title: true,
-          }
-        }
+        patient: { select: { id: true, firstName: true, lastName: true } },
+        creator: { select: { id: true, firstName: true, lastName: true } },
+        treatmentPlan: { select: { id: true, title: true } }
       }
     });
 
@@ -63,29 +49,9 @@ export class PaymentController {
     const payment = await prisma.payment.findUnique({
       where: { id },
       include: {
-        patient: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            phone: true,
-          }
-        },
-        creator: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          }
-        },
-        treatmentPlan: {
-          select: {
-            id: true,
-            title: true,
-            totalCost: true,
-          }
-        }
+        patient: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
+        creator: { select: { id: true, firstName: true, lastName: true } },
+        treatmentPlan: { select: { id: true, title: true, totalCost: true } }
       }
     });
 
@@ -107,23 +73,19 @@ export class PaymentController {
     const { id } = req.params;
     const updateData = req.body;
 
+    if (updateData.paymentMethod) {
+      updateData.paymentMethod = updateData.paymentMethod as PaymentMethod;
+    }
+    if (updateData.status) {
+      updateData.status = updateData.status as PaymentStatus; // <-- ΔΙΟΡΘΩΣΗ ΤΥΠΟΥ
+    }
+
     const updatedPayment = await prisma.payment.update({
       where: { id },
       data: updateData,
       include: {
-        patient: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          }
-        },
-        treatmentPlan: {
-          select: {
-            id: true,
-            title: true,
-          }
-        }
+        patient: { select: { id: true, firstName: true, lastName: true } },
+        treatmentPlan: { select: { id: true, title: true } }
       }
     });
 
@@ -147,7 +109,7 @@ export class PaymentController {
     const { id } = req.params;
     const { status, paidDate } = req.body;
 
-    const updateData: any = { status };
+    const updateData: any = { status: status as PaymentStatus }; // <-- ΔΙΟΡΘΩΣΗ ΤΥΠΟΥ
     if (paidDate) {
       updateData.paidDate = new Date(paidDate);
     } else if (status === 'PAID' && !paidDate) {
@@ -184,26 +146,15 @@ export class PaymentController {
 
     const where: any = { patientId };
     if (status) {
-      where.status = status;
+      where.status = status as PaymentStatus; // <-- ΔΙΟΡΘΩΣΗ ΤΥΠΟΥ
     }
 
     const [payments, total] = await Promise.all([
       prisma.payment.findMany({
         where,
         include: {
-          creator: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            }
-          },
-          treatmentPlan: {
-            select: {
-              id: true,
-              title: true,
-            }
-          }
+          creator: { select: { id: true, firstName: true, lastName: true } },
+          treatmentPlan: { select: { id: true, title: true } }
         },
         skip,
         take: limit,
@@ -227,6 +178,7 @@ export class PaymentController {
     });
   });
 
+  // ... (Ο υπόλοιπος κώδικας παραμένει ο ίδιος)
   /**
    * Get payments by treatment plan ID
    */
@@ -398,21 +350,8 @@ export class PaymentController {
           ],
         },
         include: {
-          patient: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              phone: true,
-            }
-          },
-          treatmentPlan: {
-            select: {
-              id: true,
-              title: true,
-            }
-          }
+          patient: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
+          treatmentPlan: { select: { id: true, title: true } }
         },
         skip,
         take: limit,
@@ -463,21 +402,8 @@ export class PaymentController {
         },
       },
       include: {
-        patient: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            phone: true,
-          }
-        },
-        treatmentPlan: {
-          select: {
-            id: true,
-            title: true,
-          }
-        }
+        patient: { select: { id: true, firstName: true, lastName: true, email: true, phone: true } },
+        treatmentPlan: { select: { id: true, title: true } }
       },
       orderBy: { dueDate: 'asc' },
     });
@@ -513,26 +439,15 @@ export class PaymentController {
     }
 
     if (status) {
-      where.status = status;
+      where.status = status as PaymentStatus; // <-- ΔΙΟΡΘΩΣΗ ΤΥΠΟΥ
     }
 
     const [payments, summary] = await Promise.all([
       prisma.payment.findMany({
         where,
         include: {
-          patient: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-            }
-          },
-          treatmentPlan: {
-            select: {
-              id: true,
-              title: true,
-            }
-          }
+          patient: { select: { id: true, firstName: true, lastName: true } },
+          treatmentPlan: { select: { id: true, title: true } }
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -580,7 +495,7 @@ export class PaymentController {
     const { paidDate, transactionId } = req.body;
 
     const updateData: any = {
-      status: 'PAID',
+      status: 'PAID' as PaymentStatus, // <-- ΔΙΟΡΘΩΣΗ ΤΥΠΟΥ
       paidDate: paidDate ? new Date(paidDate) : new Date(),
     };
 
@@ -628,9 +543,9 @@ export class PaymentController {
         treatmentPlanId,
         amount: paymentAmount,
         currency: 'EUR',
-        paymentMethod: 'CASH', // Default, can be changed later
+        paymentMethod: 'CASH' as PaymentMethod,
         description: `Payment ${i + 1} of ${numberOfPayments} for treatment plan`,
-        status: 'PENDING',
+        status: 'PENDING' as PaymentStatus, // <-- ΔΙΟΡΘΩΣΗ ΤΥΠΟΥ
         dueDate,
         createdBy: req.user!.id,
       };

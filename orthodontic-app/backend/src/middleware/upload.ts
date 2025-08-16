@@ -1,8 +1,9 @@
+import { BadRequestError } from '../utils/error.handler.js';
 import multer from 'multer';
 import path from 'path';
 import { Request } from 'express';
 import { logger } from '../utils/logger.js';
-import { BadRequestError } from './error.js';
+
 
 // File filter for images
 const imageFilter = (req: Request, file: Express.Multer.File, cb: any) => {

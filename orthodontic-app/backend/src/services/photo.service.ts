@@ -1,10 +1,25 @@
+import { NotFoundError } from '../utils/error.handler.js';
 import { prisma } from '../config/database.js';
 import { uploadPhotoToCloudinary, deletePhotoFromCloudinary, getOptimizedPhotoUrls } from '../config/cloudinary.js';
 import { logger, uploadLogger } from '../utils/logger.js';
-import { NotFoundError, BadRequestError } from '../middleware/error.js';
 import { Prisma } from '@prisma/client';
+import { Express } from 'express'; // <--- ΔΙΟΡΘΩΣΗ: Σωστό import
 import path from 'path';
-import fs from 'fs/promises';
+
+// Δημιουργία τύπου για το αποτέλεσμα του Cloudinary
+interface CloudinaryUploadResult {
+  public_id: string;
+  secure_url: string;
+  url: string;
+  width: number;
+  height: number;
+  format: string;
+  bytes: number;
+  folder: string;
+  created_at: string;
+  version: number;
+}
+
 
 export interface CreatePhotoData {
   patientId: string;
@@ -37,15 +52,15 @@ export interface PhotoWithUrls {
   cloudinaryId: string;
   cloudinaryUrl: string;
   category: string;
-  subcategory?: string;
-  description?: string;
+  subcategory?: string | null;
+  description?: string | null;
   tags: string[];
   fileSize: number;
   mimeType: string;
-  width?: number;
-  height?: number;
+  width?: number | null;
+  height?: number | null;
   isBeforeAfter: boolean;
-  beforeAfterPairId?: string;
+  beforeAfterPairId?: string | null;
   uploadedAt: Date;
   updatedAt: Date;
   urls: {
@@ -68,12 +83,12 @@ export interface PhotoWithUrls {
     id: string;
     title: string;
     phaseNumber: number;
-  };
+  } | null;
   appointment?: {
     id: string;
     appointmentDate: Date;
     appointmentTime: string;
-  };
+  } | null;
 }
 
 export class PhotoService {
@@ -81,7 +96,7 @@ export class PhotoService {
    * Upload single photo
    */
   static async uploadPhoto(
-    file: Express.Multer.File,
+    file: Express.Multer.File, // <--- ΔΙΟΡΘΩΣΗ: Χρήση του σωστού τύπου
     data: CreatePhotoData
   ): Promise<PhotoWithUrls> {
     try {
@@ -102,7 +117,7 @@ export class PhotoService {
       const safeOriginalName = path.basename(file.originalname, extension)
         .replace(/[^a-zA-Z0-9]/g, '_')
         .substring(0, 50);
-      
+
       const filename = `${data.category.toLowerCase()}_${safeOriginalName}_${timestamp}_${randomSuffix}${extension}`;
 
       // Upload to Cloudinary
@@ -115,7 +130,7 @@ export class PhotoService {
           quality: 'auto:good',
           format: 'auto',
         }
-      });
+      }) as CloudinaryUploadResult;
 
       // Save photo record to database
       const photo = await prisma.photo.create({
@@ -207,7 +222,7 @@ export class PhotoService {
    * Upload multiple photos
    */
   static async uploadMultiplePhotos(
-    files: Express.Multer.File[],
+    files: Express.Multer.File[], // <--- ΔΙΟΡΘΩΣΗ: Χρήση του σωστού τύπου
     data: CreatePhotoData
   ): Promise<PhotoWithUrls[]> {
     try {
@@ -233,6 +248,7 @@ export class PhotoService {
     }
   }
 
+  // ... (Ο υπόλοιπος κώδικας παραμένει ο ίδιος)
   /**
    * Get photo by ID
    */
@@ -547,7 +563,7 @@ export class PhotoService {
   ): Promise<PhotoWithUrls[]> {
     try {
       const where: Prisma.PhotoWhereInput = { patientId };
-      
+
       if (category) {
         where.category = category as any;
       }

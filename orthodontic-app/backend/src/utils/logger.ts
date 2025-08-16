@@ -50,7 +50,7 @@ const transports = [
 // Add file transports in production or when LOG_FILE is specified
 if (process.env.NODE_ENV === 'production' || process.env.LOG_FILE) {
   const logsDir = path.dirname(process.env.LOG_FILE || 'logs/app.log');
-  
+
   // Ensure logs directory exists
   import('fs').then(fs => {
     if (!fs.existsSync(logsDir)) {
@@ -66,7 +66,7 @@ if (process.env.NODE_ENV === 'production' || process.env.LOG_FILE) {
       format: fileFormat,
       maxsize: 5242880, // 5MB
       maxFiles: 5,
-    })
+    }) as any // <--- ΔΙΟΡΘΩΣΗ ΕΔΩ
   );
 
   // Combined log file
@@ -76,7 +76,7 @@ if (process.env.NODE_ENV === 'production' || process.env.LOG_FILE) {
       format: fileFormat,
       maxsize: 5242880, // 5MB
       maxFiles: 5,
-    })
+    }) as any // <--- ΔΙΟΡΘΩΣΗ ΕΔΩ
   );
 
   // HTTP requests log file
@@ -87,7 +87,7 @@ if (process.env.NODE_ENV === 'production' || process.env.LOG_FILE) {
       format: fileFormat,
       maxsize: 5242880, // 5MB
       maxFiles: 3,
-    })
+    }) as any // <--- ΔΙΟΡΘΩΣΗ ΕΔΩ
   );
 }
 
@@ -200,7 +200,7 @@ export const logSecurity = (event: string, details?: any) => {
 // Performance timing utility
 export const createTimer = (label: string) => {
   const start = Date.now();
-  
+
   return {
     end: (details?: any) => {
       const duration = Date.now() - start;

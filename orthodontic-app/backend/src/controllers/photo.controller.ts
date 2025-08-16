@@ -1,8 +1,9 @@
+import { BadRequestError } from '../utils/error.handler.js';
 import { Request, Response } from 'express';
 import { PhotoService } from '../services/photo.service.js';
 import { asyncHandler } from '../middleware/error.js';
 import { logger, uploadLogger } from '../utils/logger.js';
-import { BadRequestError } from '../middleware/error.js';
+
 
 export class PhotoController {
   /**

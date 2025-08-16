@@ -1,6 +1,7 @@
+import { BadRequestError } from '../utils/error.handler.js';
 import { z } from 'zod';
 import { Request, Response, NextFunction } from 'express';
-import { BadRequestError } from '../middleware/error.js';
+
 
 // Common validation schemas
 export const emailSchema = z.string().email('Invalid email format');

@@ -1,7 +1,8 @@
+import { NotFoundError } from '../utils/error.handler.js';
 import { Request, Response } from 'express';
 import { prisma } from '../config/database.js';
 import { asyncHandler } from '../middleware/error.js';
-import { NotFoundError, BadRequestError } from '../middleware/error.js';
+
 import { logger } from '../utils/logger.js';
 
 export class TreatmentController {

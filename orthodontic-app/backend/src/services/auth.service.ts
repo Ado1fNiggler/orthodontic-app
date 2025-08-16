@@ -1,8 +1,9 @@
+import { ConflictError, UnauthorizedError, BadRequestError } from '../utils/error.handler.js';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../config/database.js';
 import { generateToken, generateRefreshToken, verifyRefreshToken } from '../middleware/auth.js';
 import { logger, authLogger } from '../utils/logger.js';
-import { BadRequestError, UnauthorizedError, ConflictError } from '../middleware/error.js';
+
 
 export interface LoginCredentials {
   email: string;

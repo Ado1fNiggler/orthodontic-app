@@ -1,7 +1,6 @@
-import { prisma } from '../config/database.js';
-import { connectMySQL } from '../config/database.js';
+import { ConflictError, NotFoundError } from '../utils/error.handler.js';
+import { prisma, connectMySQL } from '../config/database.js';
 import { logger, dbLogger } from '../utils/logger.js';
-import { NotFoundError, BadRequestError, ConflictError } from '../middleware/error.js';
 import { Prisma } from '@prisma/client';
 
 export interface CreatePatientData {
@@ -41,13 +40,13 @@ export interface PatientWithStats {
   firstName: string;
   lastName: string;
   email?: string;
-  phone?: string;
-  dateOfBirth?: Date;
-  gender?: string;
-  address?: string;
-  city?: string;
-  postalCode?: string;
-  country?: string;
+  phone?: string | null;
+  dateOfBirth?: Date | null;
+  gender?: string | null;
+  address?: string | null;
+  city?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -173,9 +172,22 @@ export class PatientService {
           select: { appointmentDate: true },
         }),
       ]);
+      
+      // ΔΙΟΡΘΩΣΗ: Μετατροπή των null σε undefined για συμβατότητα τύπων
+      const patientData = {
+          ...patient,
+          email: patient.email ?? undefined,
+          phone: patient.phone ?? undefined,
+          dateOfBirth: patient.dateOfBirth ?? undefined,
+          gender: patient.gender ?? undefined,
+          address: patient.address ?? undefined,
+          city: patient.city ?? undefined,
+          postalCode: patient.postalCode ?? undefined,
+          country: patient.country ?? undefined,
+      };
 
       return {
-        ...patient,
+        ...patientData,
         stats: {
           totalPhotos: patient._count.photos,
           totalTreatmentPlans: patient._count.treatmentPlans,
@@ -184,7 +196,7 @@ export class PatientService {
           lastAppointment: lastAppointment?.appointmentDate,
           nextAppointment: nextAppointment?.appointmentDate,
         },
-      };
+      } as unknown as PatientWithStats;
     } catch (error) {
       logger.error('Get patient by ID failed', {
         patientId: id,
@@ -408,7 +420,7 @@ export class PatientService {
   static async importFromBookingSystem(bookingId: string, createdBy: string) {
     try {
       const mysql = await connectMySQL();
-      
+
       // Get booking data from MySQL
       const [rows] = await mysql.execute(
         'SELECT * FROM bookings WHERE id = ? OR booking_number = ?',

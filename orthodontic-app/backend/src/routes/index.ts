@@ -51,7 +51,7 @@ router.get('/health', async (req, res) => {
 
     // Check if any service is unhealthy
     const isUnhealthy = Object.values(overallHealth.services).some(
-      service => service.status === 'unhealthy'
+      service => 'status' in service && service.status === 'unhealthy'
     );
 
     if (isUnhealthy) {

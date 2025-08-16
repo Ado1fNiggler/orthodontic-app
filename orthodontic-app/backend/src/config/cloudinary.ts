@@ -262,7 +262,7 @@ export const searchPhotosInCloudinary = async (searchParams: {
     const result = await cloudinary.search
       .expression(expression)
       .max_results(maxResults)
-      .sort_by([['created_at', 'desc']])
+      .sort_by('created_at', 'desc')
       .execute();
 
     return result.resources;
