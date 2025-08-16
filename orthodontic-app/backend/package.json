@@ -6,7 +6,7 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "nodemon --exec tsx src/server.ts",
-    "build": "tsc && tsc-alias",
+    "build": "npx tsc && npx tsc-alias",
     "start": "node dist/server.js",
     "start:prod": "NODE_ENV=production node dist/server.js",
     "clean": "rm -rf dist",
